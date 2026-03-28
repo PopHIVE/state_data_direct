@@ -1,0 +1,235 @@
+================================================================
+EPIPORTAL COVERAGE REPORT
+Generated: 2026-03-28 13:06:55.529548
+================================================================
+
+States with data: 14/33  |  Total rows: 1,041,299
+
+SCRAPING RESULTS
+---------------------------------------------------------------------- 
+  FAIL AK          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL AL          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL AZ          0 rows  Chromote: no accessible data found in rendered JS dashb
+  OK   CA      4,036 rows  CKAN data: 4036 rows from respiratory-virus-dashboard
+  OK   CO      1,780 rows  ArcGIS FeatureServer data: 1780 rows from 3 layers
+  OK   CT         53 rows  Socrata data: 53 rows from 8d4q-hwjx
+  FAIL FL          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL GA          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL IA          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL IL          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL IN          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL KY          0 rows  Chromote: no accessible data found in rendered JS dashb
+  OK   LA     84,928 rows  Chromote: 84928 rows from https://ldh.la.gov/assets/oph
+  FAIL MA          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL MD          0 rows  Chromote: no accessible data found in rendered JS dashb
+  OK   MI         70 rows  Chromote: 70 rows from https://www.michigan.gov/mdhhs/-
+  OK   MN     35,263 rows  Downloaded 35263 rows from 12 files: mls_rsv.csv, mls_o
+  FAIL MO          0 rows  Chromote: no accessible data found in rendered JS dashb
+  FAIL NC          0 rows  Failed to download any NC data files
+  FAIL NJ          0 rows  Chromote: no accessible data found in rendered JS dashb
+  OK   NY    566,965 rows  Socrata data: 566965 rows from 5 datasets: w6ed-sctw, j
+  FAIL OH          0 rows  Ohio data.ohio.gov dataset not accessible via API; data
+  FAIL OK          0 rows  Chromote: no accessible data found in rendered JS dashb
+  OK   OR     12,926 rows  Oregon: 12926 rows from 4 sources: data.oregon.gov/2idf
+  OK   PA    289,639 rows  Socrata data: 289639 rows from 5 datasets: mrpb-ugjv, k
+  FAIL SC          0 rows  Chromote: no accessible data found in rendered JS dashb
+  OK   TN      2,520 rows  Chromote: 2520 rows from https://www.tn.gov/content/dam
+  OK   TX     10,991 rows  ArcGIS FeatureServer data: 10991 rows from 4 layers
+  FAIL UT          0 rows  Chromote: no accessible data found in rendered JS dashb
+  OK   VA      3,280 rows  VDH Direct CSV: 3280 rows from 7 files
+  OK   VT      1,360 rows  ArcGIS FeatureServer data: 1360 rows from 1 layers
+  OK   WA     27,488 rows  WA DOH: 27488 rows from 5 files: Respiratory_Disease_CD
+  FAIL WI          0 rows  No CSV/Excel/JSON download links found on any WI DHS pa
+
+
+INDICATOR COVERAGE BY STATE
+====================================================================== 
+
+Alaska          (AK)   8 indicators  STATUS: FAILED
+  Pathogens needed: acute respiratory illness (ARI); COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Source: https://health.alaska.gov/en/resources/respiratory-virus-snapshot/
+  MISSING: all 8 indicators
+
+Alabama         (AL)   3 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); RSV
+  Source: https://www.alabamapublichealth.gov/data/respiratory.html
+  MISSING: all 3 indicators
+
+Arizona         (AZ)  21 indicators  STATUS: FAILED
+  Pathogens needed: acute respiratory illness (ARI); COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Source: https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/respiratory-illness/dashboards/index.php
+  MISSING: all 21 indicators
+
+California      (CA)  15 indicators  10/15 covered (67%)  [4,036 rows]
+  Missing pathogens: COVID-19
+  Missing indicators: California COVID % ED Visits; California COVID % Pediatric Deaths; California COVID % Test Positivity; California COVID % Total Deaths; California COVID Hospital Admissions per 100k pop
+
+Colorado        (CO)  26 indicators  19/26 covered (73%)  [1,780 rows]
+  Missing pathogens: RSV
+  Missing indicators (7): Colorado RSV # Hospital Admissions; Colorado RSV # Hospital Admissions per 100k; Colorado RSV # Outbreaks by Facility Type; Colorado RSV # Pediatric Deaths ...
+
+Connecticut     (CT)  13 indicators   9/13 covered (69%)  [53 rows]
+  Missing pathogens: RSV
+  Missing indicators: Connecticut RSV # Cases; Connecticut RSV # Deaths; Connecticut RSV # Hospitalizations; Connecticut RSV % ED Visits
+
+Florida         (FL)  11 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); influenza (seasonal); influenza-like illness (ILI); influenza-like illness (ILI)
+  Source: https://www.flhealthcharts.gov/ChartsDashboards/rdPage.aspx?rdReport=Covid19.Dataviewer
+  MISSING: all 11 indicators
+
+Georgia         (GA)   5 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); RSV
+  Source: https://dph.georgia.gov/epidemiology/acute-disease-epidemiology/viral-respiratory-diseases
+  MISSING: all 5 indicators
+
+Iowa            (IA)  24 indicators  STATUS: FAILED
+  Pathogens needed: pathogen independent; adenovirus; coronaviruses (other than COVID-19); COVID-19; influenza (seasonal); human metapneumovirus; influenza-like illness (ILI); parainfluenza; enterovirus; rhinovirus; RSV
+  Source: https://hhs.iowa.gov/health-prevention/providers-professionals/iowa-influenza-surveillance
+  MISSING: all 24 indicators
+
+Illinois        (IL)  29 indicators  STATUS: FAILED
+  Pathogens needed: acute respiratory illness (ARI); adenovirus; COVID-19; enterovirus; rhinovirus; influenza (seasonal); human metapneumovirus; mycoplasma; parainfluenza; pneumonia; RSV
+  Source: https://dph.illinois.gov/topics-services/diseases-and-conditions/respiratory-disease/surveillance/respiratory-disease-report.html
+  MISSING: all 29 indicators
+
+Indiana         (IN)  18 indicators  STATUS: FAILED
+  Pathogens needed: adenovirus; coronaviruses (other than COVID-19); COVID-19; enterovirus; rhinovirus; influenza (seasonal); human metapneumovirus; influenza-like illness (ILI); parainfluenza; RSV
+  Source: https://www.in.gov/health/directory/office-of-the-commissioner/public-health-data-navigator/infectious-disease-prevention-and-control/influenza-data-dashboard/
+  MISSING: all 18 indicators
+
+Kentucky        (KY)  27 indicators  STATUS: FAILED
+  Pathogens needed: acute respiratory illness (ARI); COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Source: https://dashboard.chfs.ky.gov/views/DPHRSP001RespiratoryDiseases/HospitalizationsandEDVisits?%3Aembed=y&%3AisGuestRedirectFromVizportal=y
+  MISSING: all 27 indicators
+
+Louisiana       (LA)  11 indicators   0/11 covered (0%)  [84,928 rows]
+  Missing pathogens: COVID-19; influenza (seasonal); RSV
+  Missing indicators (11): Louisiana # COVID Deaths; Louisiana # Flu Deaths; Louisiana # RSV Deaths; Louisiana COVID % ED Visits ...
+
+Massachusetts   (MA)  16 indicators  STATUS: FAILED
+  Pathogens needed: acute respiratory illness (ARI); COVID-19; influenza (seasonal); RSV
+  Source: https://www.mass.gov/info-details/respiratory-illness-reporting
+  MISSING: all 16 indicators
+
+Maryland        (MD)  21 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Source: https://health.maryland.gov/covid/Pages/Maryland-COVID-19-Data.aspx
+  MISSING: all 21 indicators
+
+Michigan        (MI)   8 indicators   0/ 8 covered (0%)  [70 rows]
+  Missing pathogens: COVID-19; influenza (seasonal); RSV
+  Missing indicators (8): Michigan COVID # Hospital Admissions; Michigan COVID # Outbreaks by Facility Type; Michigan COVID % ED Visits; Michigan Flu # Hospital Admissions ...
+
+Minnesota       (MN)  17 indicators  10/17 covered (59%)  [35,263 rows]
+  Missing pathogens: adenovirus; COVID-19; human metapneumovirus; rhinovirus; coronaviruses (other than COVID-19)
+  Missing indicators (7): Minnesota Adenovirus # Positive Tests; Minnesota COVID # Assisted Living Resident Cases; Minnesota COVID # Hospitalizations per 100k; Minnesota COVID % Inpatient and ED Visits ...
+
+Missouri        (MO)   5 indicators  STATUS: FAILED
+  Pathogens needed: influenza (seasonal); influenza-like illness (ILI)
+  Source: https://health.mo.gov/living/healthcondiseases/communicable/influenza/dashboard.php
+  MISSING: all 5 indicators
+
+North Carolina  (NC)   8 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Source: https://covid19.ncdhhs.gov/dashboard/data-behind-dashboards
+  MISSING: all 8 indicators
+
+New Jersey      (NJ)  23 indicators  STATUS: FAILED
+  Pathogens needed: adenovirus; coronaviruses (other than COVID-19); COVID-19; influenza (seasonal); human metapneumovirus; influenza-like illness (ILI); parainfluenza; enterovirus; rhinovirus; RSV
+  Source: https://www.nj.gov/health/respiratory-viruses/data-and-reports/#respiratory-illness-dashboard
+  MISSING: all 23 indicators
+
+New York        (NY)  15 indicators  14/15 covered (93%)  [566,965 rows]
+  Missing pathogens: pathogen independent
+  Missing indicators: New York State COVID % Hospital Bed Capacity
+
+Ohio            (OH)  12 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); RSV
+  Source: https://data.ohio.gov/wps/portal/gov/data/view/ohio-department-of-health-respiratory-dashboard
+  MISSING: all 12 indicators
+
+Oklahoma        (OK)  24 indicators  STATUS: FAILED
+  Pathogens needed: adenovirus; coronaviruses (other than COVID-19); COVID-19; influenza (seasonal); human metapneumovirus; influenza-like illness (ILI); mycoplasma; parainfluenza; enterovirus; rhinovirus; RSV
+  Source: https://oklahoma.gov/health/health-education/acute-disease-service/viral-view/respiratory-data.html
+  MISSING: all 24 indicators
+
+Oregon          (OR)  16 indicators   0/16 covered (0%)  [12,926 rows]
+  Missing pathogens: COVID-19; influenza (seasonal); RSV
+  Missing indicators (16): Oregon COVID # Deaths; Oregon COVID # Outbreaks by Setting; Oregon COVID # Positive Tests; Oregon COVID % Positive Tests ...
+
+Pennsylvania    (PA)  14 indicators  13/14 covered (93%)  [289,639 rows]
+  Missing pathogens: acute respiratory illness (ARI)
+  Missing indicators: Pennsylvania Respiratory Symptoms % ED Visits
+
+South Carolina  (SC)  13 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Source: https://dph.sc.gov/respiratory-disease-dashboard
+  MISSING: all 13 indicators
+
+Tennessee       (TN)  10 indicators   0/10 covered (0%)  [2,520 rows]
+  Missing pathogens: COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Missing indicators (10): Tennessee COVID # ED Visits; Tennessee COVID % ED Visits; Tennessee Flu # ED Visits; Tennessee Flu # Outbreaks ...
+
+Texas           (TX)  14 indicators  12/14 covered (86%)  [10,991 rows]
+  Missing pathogens: pathogen independent
+  Missing indicators: Texas % Hospital Bed Capacity; Texas % ICU Bed Capacity
+
+Utah            (UT)  12 indicators  STATUS: FAILED
+  Pathogens needed: COVID-19; influenza (seasonal); influenza-like illness (ILI); RSV
+  Source: https://dhhs.utah.gov/health-dashboards/respiratory-disease-data/
+  MISSING: all 12 indicators
+
+Virginia        (VA)  13 indicators  13/13 covered (100%)  [3,280 rows]
+
+Vermont         (VT)  10 indicators  10/10 covered (100%)  [1,360 rows]
+
+Washington      (WA)  18 indicators   7/18 covered (39%)  [27,488 rows]
+  Missing pathogens: COVID-19; RSV
+  Missing indicators (11): Washington COVID # Deaths; Washington COVID # Hospital Beds in Use; Washington COVID # ICU Beds in Use; Washington COVID % ED Visits ...
+
+Wisconsin       (WI)  43 indicators  STATUS: FAILED
+  Pathogens needed: adenovirus; acute respiratory illness (ARI); COVID-19; influenza (seasonal); human metapneumovirus; influenza-like illness (ILI); parainfluenza; pneumonia; COVID-19; influenza (seasonal); pneumonia; RSV; enterovirus; rhinovirus; RSV
+  Source: https://www.dhs.wisconsin.gov/disease/laboratory-based-data.htm
+  MISSING: all 43 indicators
+
+
+
+SUMMARY TABLE
+====================================================================== 
+State           Code  Indicators    Covered      Pct  Status    
+---------------------------------------------------------------------- 
+Alaska          AK             8          0       0%  FAILED    
+Alabama         AL             3          0       0%  FAILED    
+Arizona         AZ            21          0       0%  FAILED    
+California      CA            15         10      67%  PARTIAL   
+Colorado        CO            26         19      73%  PARTIAL   
+Connecticut     CT            13          9      69%  PARTIAL   
+Florida         FL            11          0       0%  FAILED    
+Georgia         GA             5          0       0%  FAILED    
+Iowa            IA            24          0       0%  FAILED    
+Illinois        IL            29          0       0%  FAILED    
+Indiana         IN            18          0       0%  FAILED    
+Kentucky        KY            27          0       0%  FAILED    
+Louisiana       LA            11          0       0%  POOR      
+Massachusetts   MA            16          0       0%  FAILED    
+Maryland        MD            21          0       0%  FAILED    
+Michigan        MI             8          0       0%  POOR      
+Minnesota       MN            17         10      59%  PARTIAL   
+Missouri        MO             5          0       0%  FAILED    
+North Carolina  NC             8          0       0%  FAILED    
+New Jersey      NJ            23          0       0%  FAILED    
+New York        NY            15         14      93%  GOOD      
+Ohio            OH            12          0       0%  FAILED    
+Oklahoma        OK            24          0       0%  FAILED    
+Oregon          OR            16          0       0%  POOR      
+Pennsylvania    PA            14         13      93%  GOOD      
+South Carolina  SC            13          0       0%  FAILED    
+Tennessee       TN            10          0       0%  POOR      
+Texas           TX            14         12      86%  GOOD      
+Utah            UT            12          0       0%  FAILED    
+Virginia        VA            13         13     100%  GOOD      
+Vermont         VT            10         10     100%  GOOD      
+Washington      WA            18          7      39%  POOR      
+Wisconsin       WI            43          0       0%  FAILED    
+---------------------------------------------------------------------- 
+TOTAL                        523        117
