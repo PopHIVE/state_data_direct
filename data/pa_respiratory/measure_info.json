@@ -1,0 +1,85 @@
+{
+  "covid_surveillance": {
+    "id": "covid_surveillance",
+    "short_name": "COVID surveillance",
+    "long_name": "Pennsylvania COVID Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly covid surveillance data from Pennsylvania Department of Health",
+    "long_description": "Pennsylvania Department of Health collects and reports covid surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for covid surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "pa_dph"
+      }
+    ],
+    "citations": []
+  },
+  "influenza_surveillance": {
+    "id": "influenza_surveillance",
+    "short_name": "INFLUENZA surveillance",
+    "long_name": "Pennsylvania INFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly influenza surveillance data from Pennsylvania Department of Health",
+    "long_description": "Pennsylvania Department of Health collects and reports influenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for influenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "pa_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rsv_surveillance": {
+    "id": "rsv_surveillance",
+    "short_name": "RSV surveillance",
+    "long_name": "Pennsylvania RSV Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rsv surveillance data from Pennsylvania Department of Health",
+    "long_description": "Pennsylvania Department of Health collects and reports rsv surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rsv surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "pa_dph"
+      }
+    ],
+    "citations": []
+  },
+  "ari_surveillance": {
+    "id": "ari_surveillance",
+    "short_name": "ARI surveillance",
+    "long_name": "Pennsylvania ARI Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly ari surveillance data from Pennsylvania Department of Health",
+    "long_description": "Pennsylvania Department of Health collects and reports ari surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for ari surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "pa_dph"
+      }
+    ],
+    "citations": []
+  },
+  "_sources": {
+    "pa_dph": {
+      "name": "Pennsylvania Department of Health",
+      "url": "https://data.pa.gov/resource/mrpb-ugjv.csv",
+      "organization": "Pennsylvania Department of Health",
+      "organization_url": "https://data.pa.gov",
+      "description": "Pennsylvania Department of Health provides weekly respiratory surveillance data for Pennsylvania covering pathogens including: covid, influenza, rsv, ari . Data is published via state health department dashboards and reports. Temporal coverage: ~2019-ongoing. Geographic coverage: state level.",
+      "restrictions": "Public domain state government health data.",
+      "date_accessed": 2026
+    }
+  }
+}

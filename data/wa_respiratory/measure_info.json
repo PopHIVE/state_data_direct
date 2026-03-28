@@ -1,0 +1,67 @@
+{
+  "covid_surveillance": {
+    "id": "covid_surveillance",
+    "short_name": "COVID surveillance",
+    "long_name": "Washington COVID Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly covid surveillance data from Washington State Department of Health",
+    "long_description": "Washington State Department of Health collects and reports covid surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for covid surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wa_dph"
+      }
+    ],
+    "citations": []
+  },
+  "influenza_surveillance": {
+    "id": "influenza_surveillance",
+    "short_name": "INFLUENZA surveillance",
+    "long_name": "Washington INFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly influenza surveillance data from Washington State Department of Health",
+    "long_description": "Washington State Department of Health collects and reports influenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for influenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wa_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rsv_surveillance": {
+    "id": "rsv_surveillance",
+    "short_name": "RSV surveillance",
+    "long_name": "Washington RSV Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rsv surveillance data from Washington State Department of Health",
+    "long_description": "Washington State Department of Health collects and reports rsv surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rsv surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wa_dph"
+      }
+    ],
+    "citations": []
+  },
+  "_sources": {
+    "wa_dph": {
+      "name": "Washington State Department of Health",
+      "url": "https://doh.wa.gov/data-and-statistical-reports/diseases-and-chronic-conditions/communicable-disease-surveillance-data/respiratory-illness-data-dashboard",
+      "organization": "Washington State Department of Health",
+      "organization_url": "https://doh.wa.gov",
+      "description": "Washington State Department of Health provides weekly respiratory surveillance data for Washington covering pathogens including: covid, influenza, rsv . Data is published via state health department dashboards and reports. Temporal coverage: ~2019-ongoing. Geographic coverage: state level.",
+      "restrictions": "Public domain state government health data.",
+      "date_accessed": 2026
+    }
+  }
+}

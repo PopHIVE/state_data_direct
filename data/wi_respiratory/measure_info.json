@@ -1,0 +1,193 @@
+{
+  "covid_surveillance": {
+    "id": "covid_surveillance",
+    "short_name": "COVID surveillance",
+    "long_name": "Wisconsin COVID Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly covid surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports covid surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for covid surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "influenza_surveillance": {
+    "id": "influenza_surveillance",
+    "short_name": "INFLUENZA surveillance",
+    "long_name": "Wisconsin INFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly influenza surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports influenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for influenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rsv_surveillance": {
+    "id": "rsv_surveillance",
+    "short_name": "RSV surveillance",
+    "long_name": "Wisconsin RSV Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rsv surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports rsv surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rsv surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "adenovirus_surveillance": {
+    "id": "adenovirus_surveillance",
+    "short_name": "ADENOVIRUS surveillance",
+    "long_name": "Wisconsin ADENOVIRUS Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly adenovirus surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports adenovirus surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for adenovirus surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "enterovirus_surveillance": {
+    "id": "enterovirus_surveillance",
+    "short_name": "ENTEROVIRUS surveillance",
+    "long_name": "Wisconsin ENTEROVIRUS Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly enterovirus surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports enterovirus surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for enterovirus surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "metapneumovirus_surveillance": {
+    "id": "metapneumovirus_surveillance",
+    "short_name": "METAPNEUMOVIRUS surveillance",
+    "long_name": "Wisconsin METAPNEUMOVIRUS Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly metapneumovirus surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports metapneumovirus surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for metapneumovirus surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "parainfluenza_surveillance": {
+    "id": "parainfluenza_surveillance",
+    "short_name": "PARAINFLUENZA surveillance",
+    "long_name": "Wisconsin PARAINFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly parainfluenza surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports parainfluenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for parainfluenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "pneumonia_surveillance": {
+    "id": "pneumonia_surveillance",
+    "short_name": "PNEUMONIA surveillance",
+    "long_name": "Wisconsin PNEUMONIA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly pneumonia surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports pneumonia surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for pneumonia surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "ili_surveillance": {
+    "id": "ili_surveillance",
+    "short_name": "ILI surveillance",
+    "long_name": "Wisconsin ILI Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly ili surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports ili surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for ili surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "ari_surveillance": {
+    "id": "ari_surveillance",
+    "short_name": "ARI surveillance",
+    "long_name": "Wisconsin ARI Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly ari surveillance data from Wisconsin Department of Health Services",
+    "long_description": "Wisconsin Department of Health Services collects and reports ari surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for ari surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "wi_dph"
+      }
+    ],
+    "citations": []
+  },
+  "_sources": {
+    "wi_dph": {
+      "name": "Wisconsin Department of Health Services",
+      "url": "https://www.dhs.wisconsin.gov/disease/laboratory-based-data.htm",
+      "organization": "Wisconsin Department of Health Services",
+      "organization_url": "https://www.dhs.wisconsin.gov",
+      "description": "Wisconsin Department of Health Services provides weekly respiratory surveillance data for Wisconsin covering pathogens including: covid, influenza, rsv, adenovirus, enterovirus, metapneumovirus, parainfluenza, pneumonia, ili, ari . Data is published via state health department dashboards and reports. Temporal coverage: ~2019-ongoing. Geographic coverage: state level.",
+      "restrictions": "Public domain state government health data.",
+      "date_accessed": 2026
+    }
+  }
+}

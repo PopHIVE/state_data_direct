@@ -1,0 +1,85 @@
+{
+  "covid_surveillance": {
+    "id": "covid_surveillance",
+    "short_name": "COVID surveillance",
+    "long_name": "Virginia COVID Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly covid surveillance data from Virginia Department of Health",
+    "long_description": "Virginia Department of Health collects and reports covid surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for covid surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "va_dph"
+      }
+    ],
+    "citations": []
+  },
+  "influenza_surveillance": {
+    "id": "influenza_surveillance",
+    "short_name": "INFLUENZA surveillance",
+    "long_name": "Virginia INFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly influenza surveillance data from Virginia Department of Health",
+    "long_description": "Virginia Department of Health collects and reports influenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for influenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "va_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rsv_surveillance": {
+    "id": "rsv_surveillance",
+    "short_name": "RSV surveillance",
+    "long_name": "Virginia RSV Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rsv surveillance data from Virginia Department of Health",
+    "long_description": "Virginia Department of Health collects and reports rsv surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rsv surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "va_dph"
+      }
+    ],
+    "citations": []
+  },
+  "ari_surveillance": {
+    "id": "ari_surveillance",
+    "short_name": "ARI surveillance",
+    "long_name": "Virginia ARI Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly ari surveillance data from Virginia Department of Health",
+    "long_description": "Virginia Department of Health collects and reports ari surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for ari surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "va_dph"
+      }
+    ],
+    "citations": []
+  },
+  "_sources": {
+    "va_dph": {
+      "name": "Virginia Department of Health",
+      "url": "https://www.vdh.virginia.gov/epidemiology/respiratory-diseases-in-virginia/data/",
+      "organization": "Virginia Department of Health",
+      "organization_url": "https://www.vdh.virginia.gov",
+      "description": "Virginia Department of Health provides weekly respiratory surveillance data for Virginia covering pathogens including: covid, influenza, rsv, ari . Data is published via state health department dashboards and reports. Temporal coverage: ~2019-ongoing. Geographic coverage: state level.",
+      "restrictions": "Public domain state government health data.",
+      "date_accessed": 2026
+    }
+  }
+}

@@ -1,0 +1,85 @@
+{
+  "covid_surveillance": {
+    "id": "covid_surveillance",
+    "short_name": "COVID surveillance",
+    "long_name": "Tennessee COVID Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly covid surveillance data from Tennessee Department of Health",
+    "long_description": "Tennessee Department of Health collects and reports covid surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for covid surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "tn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "influenza_surveillance": {
+    "id": "influenza_surveillance",
+    "short_name": "INFLUENZA surveillance",
+    "long_name": "Tennessee INFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly influenza surveillance data from Tennessee Department of Health",
+    "long_description": "Tennessee Department of Health collects and reports influenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for influenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "tn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rsv_surveillance": {
+    "id": "rsv_surveillance",
+    "short_name": "RSV surveillance",
+    "long_name": "Tennessee RSV Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rsv surveillance data from Tennessee Department of Health",
+    "long_description": "Tennessee Department of Health collects and reports rsv surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rsv surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "tn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "ili_surveillance": {
+    "id": "ili_surveillance",
+    "short_name": "ILI surveillance",
+    "long_name": "Tennessee ILI Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly ili surveillance data from Tennessee Department of Health",
+    "long_description": "Tennessee Department of Health collects and reports ili surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for ili surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "tn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "_sources": {
+    "tn_dph": {
+      "name": "Tennessee Department of Health",
+      "url": "https://www.tn.gov/health/ceds-weeklyreports/respiratory-trends.html",
+      "organization": "Tennessee Department of Health",
+      "organization_url": "https://www.tn.gov",
+      "description": "Tennessee Department of Health provides weekly respiratory surveillance data for Tennessee covering pathogens including: covid, influenza, rsv, ili . Data is published via state health department dashboards and reports. Temporal coverage: ~2019-ongoing. Geographic coverage: state level.",
+      "restrictions": "Public domain state government health data.",
+      "date_accessed": 2026
+    }
+  }
+}

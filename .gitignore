@@ -1,0 +1,21 @@
+# R temp files
+.Rhistory
+.RData
+.Rproj.user/
+
+# Downloaded raw data (large)
+data/*/raw/
+data/*/standard/
+
+# Process state files
+data/*/process.json
+data/*/process_result.rds
+
+# Temp analysis scripts
+check_*.R
+analyze_*.R
+run_updated_states.R
+coverage_analysis.R
+
+# Claude internals
+.claude/

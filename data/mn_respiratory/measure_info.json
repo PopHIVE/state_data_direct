@@ -1,0 +1,175 @@
+{
+  "covid_surveillance": {
+    "id": "covid_surveillance",
+    "short_name": "COVID surveillance",
+    "long_name": "Minnesota COVID Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly covid surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports covid surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for covid surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "influenza_surveillance": {
+    "id": "influenza_surveillance",
+    "short_name": "INFLUENZA surveillance",
+    "long_name": "Minnesota INFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly influenza surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports influenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for influenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rsv_surveillance": {
+    "id": "rsv_surveillance",
+    "short_name": "RSV surveillance",
+    "long_name": "Minnesota RSV Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rsv surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports rsv surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rsv surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "adenovirus_surveillance": {
+    "id": "adenovirus_surveillance",
+    "short_name": "ADENOVIRUS surveillance",
+    "long_name": "Minnesota ADENOVIRUS Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly adenovirus surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports adenovirus surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for adenovirus surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "coronavirus_surveillance": {
+    "id": "coronavirus_surveillance",
+    "short_name": "CORONAVIRUS surveillance",
+    "long_name": "Minnesota CORONAVIRUS Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly coronavirus surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports coronavirus surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for coronavirus surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "metapneumovirus_surveillance": {
+    "id": "metapneumovirus_surveillance",
+    "short_name": "METAPNEUMOVIRUS surveillance",
+    "long_name": "Minnesota METAPNEUMOVIRUS Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly metapneumovirus surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports metapneumovirus surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for metapneumovirus surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "parainfluenza_surveillance": {
+    "id": "parainfluenza_surveillance",
+    "short_name": "PARAINFLUENZA surveillance",
+    "long_name": "Minnesota PARAINFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly parainfluenza surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports parainfluenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for parainfluenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rhinovirus_surveillance": {
+    "id": "rhinovirus_surveillance",
+    "short_name": "RHINOVIRUS surveillance",
+    "long_name": "Minnesota RHINOVIRUS Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rhinovirus surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports rhinovirus surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rhinovirus surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "ili_surveillance": {
+    "id": "ili_surveillance",
+    "short_name": "ILI surveillance",
+    "long_name": "Minnesota ILI Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly ili surveillance data from Minnesota Department of Health",
+    "long_description": "Minnesota Department of Health collects and reports ili surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for ili surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "mn_dph"
+      }
+    ],
+    "citations": []
+  },
+  "_sources": {
+    "mn_dph": {
+      "name": "Minnesota Department of Health",
+      "url": "https://www.health.state.mn.us/diseases/respiratory/stats/lab.html",
+      "organization": "Minnesota Department of Health",
+      "organization_url": "https://www.health.state.mn.us",
+      "description": "Minnesota Department of Health provides weekly respiratory surveillance data for Minnesota covering pathogens including: covid, influenza, rsv, adenovirus, coronavirus, metapneumovirus, parainfluenza, rhinovirus, ili . Data is published via state health department dashboards and reports. Temporal coverage: ~2019-ongoing. Geographic coverage: state level.",
+      "restrictions": "Public domain state government health data.",
+      "date_accessed": 2026
+    }
+  }
+}

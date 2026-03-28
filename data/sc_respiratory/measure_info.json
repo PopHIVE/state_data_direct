@@ -1,0 +1,85 @@
+{
+  "covid_surveillance": {
+    "id": "covid_surveillance",
+    "short_name": "COVID surveillance",
+    "long_name": "South Carolina COVID Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly covid surveillance data from South Carolina Department of Public Health",
+    "long_description": "South Carolina Department of Public Health collects and reports covid surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for covid surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "sc_dph"
+      }
+    ],
+    "citations": []
+  },
+  "influenza_surveillance": {
+    "id": "influenza_surveillance",
+    "short_name": "INFLUENZA surveillance",
+    "long_name": "South Carolina INFLUENZA Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly influenza surveillance data from South Carolina Department of Public Health",
+    "long_description": "South Carolina Department of Public Health collects and reports influenza surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for influenza surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "sc_dph"
+      }
+    ],
+    "citations": []
+  },
+  "rsv_surveillance": {
+    "id": "rsv_surveillance",
+    "short_name": "RSV surveillance",
+    "long_name": "South Carolina RSV Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly rsv surveillance data from South Carolina Department of Public Health",
+    "long_description": "South Carolina Department of Public Health collects and reports rsv surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for rsv surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "sc_dph"
+      }
+    ],
+    "citations": []
+  },
+  "ili_surveillance": {
+    "id": "ili_surveillance",
+    "short_name": "ILI surveillance",
+    "long_name": "South Carolina ILI Respiratory Surveillance",
+    "category": "respiratory",
+    "short_description": "Weekly ili surveillance data from South Carolina Department of Public Health",
+    "long_description": "South Carolina Department of Public Health collects and reports ili surveillance data weekly. Data covers emergency department visits, hospitalizations, laboratory-confirmed cases, and/or percent positivity.",
+    "statement": "{geography} reported {value} for ili surveillance in {time}.",
+    "measure_type": "Count or Percent (source-dependent)",
+    "unit": "Varies by indicator",
+    "time_resolution": "Week",
+    "sources": [
+      {
+        "id": "sc_dph"
+      }
+    ],
+    "citations": []
+  },
+  "_sources": {
+    "sc_dph": {
+      "name": "South Carolina Department of Public Health",
+      "url": "https://dph.sc.gov/respiratory-disease-dashboard",
+      "organization": "South Carolina Department of Public Health",
+      "organization_url": "https://dph.sc.gov",
+      "description": "South Carolina Department of Public Health provides weekly respiratory surveillance data for South Carolina covering pathogens including: covid, influenza, rsv, ili . Data is published via state health department dashboards and reports. Temporal coverage: ~2019-ongoing. Geographic coverage: state level.",
+      "restrictions": "Public domain state government health data.",
+      "date_accessed": 2026
+    }
+  }
+}
