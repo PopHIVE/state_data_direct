@@ -1,17 +1,17 @@
 # ingest.R - Arizona (AZ) Respiratory Surveillance
 # Provider: Arizona Department of Health Services
-# Tier 2 | Strategy: chromote
+# Tier 2 | Strategy: chromote (Power BI public API)
 # Run from data/az_respiratory/
 
-library(httr)
-library(rvest)
-library(vroom)
-library(dplyr)
+library(httr2)
 library(jsonlite)
+library(dplyr)
+library(vroom)
+library(lubridate)
 
 state_fips  <- "04"
 state_name  <- "Arizona"
-source_urls <- c("https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/respiratory-illness/dashboards/index.php", "https://experience.arcgis.com/experience/8c3b1a0dc26448ccb9e1efb3b17e3a00")
+source_urls <- c("https://www.azdhs.gov/preparedness/epidemiology-disease-control/infectious-disease-epidemiology/respiratory-illness/dashboards/index.php")
 
 # Initialize process record
 process_file <- "process.json"
@@ -21,231 +21,459 @@ if (file.exists(process_file)) {
   process <- list(raw_state = NULL, last_run = NULL, success = FALSE)
 }
 
-
-# Chromote headless browser: Arizona
-# Renders JS dashboard, then discovers: download links, ArcGIS REST, Socrata APIs
 result <- tryCatch({
-  library(chromote)
 
-  b <- ChromoteSession$new()
-  on.exit(tryCatch(b$close(), error=function(e) NULL), add=TRUE)
+  # ================================================================
+  # Power BI API configuration
+  # ================================================================
+  api_url <- paste0(
+    "https://wabi-us-gov-iowa-api.analysis.usgovcloudapi.net",
+    "/public/reports/querydata?synchronous=true"
+  )
+  resource_key <- "733d649c-e71b-4cbc-a2ae-fb86d7e480d2"
+  dataset_id <- "f3cd4838-0724-4753-b65f-0bec3f4a71f2"
+  report_id <- "a573a223-c57f-498f-86a4-b35c27a62558"
+  visual_id <- "1cd7ecf0e0d00b91ae70"
+  model_id <- 791111
 
-  data_raw   <- NULL
-  found_data <- FALSE
-  found_url  <- NULL
-  resp_kw <- c("influenza","rsv","covid","respiratory","ili","ari",
-               "surveillance","virus","cases","percent","hosp","death","flu","disease")
+  headers <- c(
+    "Content-Type" = "application/json;charset=UTF-8",
+    "X-PowerBI-ResourceKey" = resource_key,
+    "User-Agent" = paste0(
+      "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ",
+      "AppleWebKit/537.36"
+    )
+  )
 
-  for (page_url in source_urls) {
-    tryCatch(b$Page$navigate(page_url, wait_=TRUE, timeout_=25), error=function(e) NULL)
-    Sys.sleep(10)
+  # --- Helpers to build PBI query payloads ---
 
-    html_content <- tryCatch(
-      b$Runtime$evaluate("document.documentElement.outerHTML")$result$value,
-      error=function(e) "")
-    if (nchar(html_content) < 200) next
-
-    html_dom <- tryCatch(rvest::read_html(html_content), error=function(e) NULL)
-
-    # Strategy 1: Download links visible after JS renders
-    if (!is.null(html_dom)) {
-      links <- html_dom |> rvest::html_nodes("a") |> rvest::html_attr("href")
-      links <- links[!is.na(links)]
-      data_links <- links[grepl("[.](csv|xlsx?|json|tsv)([?#]|$)", links, ignore.case=TRUE)]
-
-      for (dl_url in data_links[seq_len(min(8, length(data_links)))]) {
-        if (!grepl("^https?://", dl_url)) {
-          bp <- httr::parse_url(page_url)
-          dl_url <- if (grepl("^//", dl_url)) paste0(bp$scheme, ":", dl_url)
-                    else if (grepl("^/", dl_url)) paste0(bp$scheme, "://", bp$hostname, dl_url)
-                    else paste0(page_url, "/", dl_url)
-        }
-        ext <- tolower(sub(".*[.]([a-zA-Z0-9]{1,5})([?#].*)?$", "\\1", dl_url))
-        if (!ext %in% c("csv","xlsx","xls","json","tsv")) ext <- "csv"
-        local_f <- paste0("raw/chromote_dl.", ext)
-        dl_resp <- tryCatch(httr::GET(dl_url, httr::timeout(90),
-          httr::write_disk(local_f, overwrite=TRUE),
-          httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
-        if (is.null(dl_resp) || httr::status_code(dl_resp) != 200) next
-        d <- if (ext %in% c("xlsx","xls")) {
-          tryCatch(as.data.frame(readxl::read_excel(local_f)), error=function(e) NULL)
-        } else if (ext == "json") {
-          tryCatch(as.data.frame(jsonlite::fromJSON(local_f)), error=function(e) NULL)
-        } else {
-          tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
-        }
-        if (!is.null(d) && nrow(d) > 0) {
-          col_text <- paste(tolower(names(d)), collapse=" ")
-          sam_text <- paste(tolower(unlist(head(d, 3))), collapse=" ")
-          ok <- any(sapply(resp_kw, function(k) grepl(k, col_text))) ||
-                any(sapply(resp_kw, function(k) grepl(k, sam_text)))
-          if (ok) { data_raw <- d; found_data <- TRUE; found_url <- dl_url; break }
-        }
-      }
-      if (found_data) break
-    }
-
-    # Strategy 2: ArcGIS FeatureServer URLs in page source
-    if (!found_data) {
-      fs_matches <- unique(regmatches(html_content,
-        gregexpr("https?://[^[:space:]]+/FeatureServer/[0-9]+", html_content))[[1]])
-      for (fs_url in fs_matches[seq_len(min(5, length(fs_matches)))]) {
-        q_url <- paste0(fs_url, "/query?where=1%3D1&outFields=*&f=json&resultRecordCount=50000")
-        r <- tryCatch(httr::GET(q_url, httr::timeout(60), httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
-        if (is.null(r) || httr::status_code(r) != 200) next
-        jd <- tryCatch(jsonlite::fromJSON(httr::content(r, "text")), error=function(e) NULL)
-        if (!is.null(jd$features) && length(jd$features) > 0) {
-          d <- tryCatch(as.data.frame(jd$features$attributes), error=function(e) NULL)
-          if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- fs_url; break }
-        }
-      }
-      if (found_data) break
-    }
-
-    # Strategy 3: ArcGIS MapServer URLs in page source
-    if (!found_data) {
-      ms_matches <- unique(regmatches(html_content,
-        gregexpr("https?://[^[:space:]]+/MapServer/[0-9]+", html_content))[[1]])
-      for (ms_url in ms_matches[seq_len(min(5, length(ms_matches)))]) {
-        q_url <- paste0(ms_url, "/query?where=1%3D1&outFields=*&f=json&resultRecordCount=50000")
-        r <- tryCatch(httr::GET(q_url, httr::timeout(60), httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
-        if (is.null(r) || httr::status_code(r) != 200) next
-        jd <- tryCatch(jsonlite::fromJSON(httr::content(r, "text")), error=function(e) NULL)
-        if (!is.null(jd$features) && length(jd$features) > 0) {
-          d <- tryCatch(as.data.frame(jd$features$attributes), error=function(e) NULL)
-          if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- ms_url; break }
-        }
-      }
-      if (found_data) break
-    }
-
-    # Strategy 4: Socrata resource endpoints embedded in page
-    if (!found_data) {
-      soc_matches <- unique(regmatches(html_content,
-        gregexpr("https?://[a-zA-Z0-9.-]+[.]gov/resource/[a-z0-9]{4}-[a-z0-9]{4}", html_content))[[1]])
-      for (soc_base in soc_matches[seq_len(min(3, length(soc_matches)))]) {
-        csv_url <- paste0(soc_base, ".csv?$limit=50000")
-        r <- tryCatch(httr::GET(csv_url, httr::timeout(60),
-          httr::write_disk("raw/chromote_socrata.csv", overwrite=TRUE),
-          httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
-        if (is.null(r) || httr::status_code(r) != 200) next
-        d <- tryCatch(vroom::vroom("raw/chromote_socrata.csv", show_col_types=FALSE), error=function(e) NULL)
-        if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- csv_url; break }
-      }
-      if (found_data) break
-    }
-
-    # Strategy 5: Direct CSV/JSON links in page <script> src or iframe src
-    if (!found_data && !is.null(html_dom)) {
-      script_srcs <- html_dom |> rvest::html_nodes("script,iframe") |> rvest::html_attr("src")
-      script_srcs <- script_srcs[!is.na(script_srcs) & grepl("[.](csv|json)([?]|$)", script_srcs)]
-      for (s_url in script_srcs[seq_len(min(3, length(script_srcs)))]) {
-        if (!grepl("^https?://", s_url)) {
-          bp <- httr::parse_url(page_url)
-          s_url <- paste0(bp$scheme, "://", bp$hostname, s_url)
-        }
-        ext <- if (grepl("[.]json", s_url)) "json" else "csv"
-        local_f <- paste0("raw/chromote_src.", ext)
-        r <- tryCatch(httr::GET(s_url, httr::timeout(60),
-          httr::write_disk(local_f, overwrite=TRUE)), error=function(e) NULL)
-        if (is.null(r) || httr::status_code(r) != 200) next
-        d <- if (ext == "json") {
-          tryCatch(as.data.frame(jsonlite::fromJSON(local_f)), error=function(e) NULL)
-        } else {
-          tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
-        }
-        if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- s_url; break }
-      }
-      if (found_data) break
-    }
-    # Strategy 6: Performance API — capture XHR/Fetch network requests
-    if (!found_data) {
-      perf_js <- paste0(
-        "JSON.stringify(",
-        "performance.getEntriesByType('resource')",
-        ".filter(e => e.initiatorType === 'xmlhttprequest' || e.initiatorType === 'fetch')",
-        ".map(e => e.name)",
-        ")")
-      perf_raw <- tryCatch(
-        b$Runtime$evaluate(perf_js)$result$value,
-        error = function(e) "[]")
-      api_urls <- tryCatch(jsonlite::fromJSON(perf_raw), error = function(e) character(0))
-      # Filter for data-like URLs (JSON APIs, CSVs, FeatureServer)
-      api_urls <- unique(api_urls[grepl(
-        "api|query|json|csv|data|feature|resource|result|record|export",
-        api_urls, ignore.case = TRUE)])
-      # Exclude common non-data URLs
-      api_urls <- api_urls[!grepl(
-        "analytics|tracking|pixel|fonts|google|facebook|tag.?manager|recaptcha|cdn\\.js",
-        api_urls, ignore.case = TRUE)]
-
-      for (api_url in api_urls[seq_len(min(10, length(api_urls)))]) {
-        local_f <- paste0("raw/chromote_api_", length(api_urls), ".json")
-        r <- tryCatch(httr::GET(api_url, httr::timeout(60),
-          httr::user_agent("Mozilla/5.0"),
-          httr::write_disk(local_f, overwrite = TRUE)),
-          error = function(e) NULL)
-        if (is.null(r) || httr::status_code(r) != 200) next
-        ct <- httr::headers(r)[["content-type"]]
-        d <- NULL
-        if (!is.null(ct) && grepl("json", ct, ignore.case = TRUE)) {
-          raw_json <- tryCatch(jsonlite::fromJSON(local_f, flatten = TRUE),
-            error = function(e) NULL)
-          if (!is.null(raw_json)) {
-            # Handle ArcGIS FeatureServer response
-            if (!is.null(raw_json$features)) {
-              d <- tryCatch(as.data.frame(raw_json$features$attributes),
-                error = function(e) NULL)
-            } else if (is.data.frame(raw_json)) {
-              d <- raw_json
-            } else if (is.list(raw_json) && length(raw_json) > 0) {
-              # Try to find the data array in the response
-              for (nm in names(raw_json)) {
-                if (is.data.frame(raw_json[[nm]]) && nrow(raw_json[[nm]]) > 5) {
-                  d <- raw_json[[nm]]; break
-                }
-              }
-            }
-          }
-        } else {
-          d <- tryCatch(vroom::vroom(local_f, show_col_types = FALSE),
-            error = function(e) NULL)
-        }
-        if (!is.null(d) && nrow(d) > 5) {
-          col_text <- paste(tolower(names(d)), collapse = " ")
-          sam_text <- paste(tolower(unlist(head(d, 3))), collapse = " ")
-          ok <- any(sapply(resp_kw, function(k) grepl(k, col_text))) ||
-                any(sapply(resp_kw, function(k) grepl(k, sam_text)))
-          if (ok) {
-            data_raw <- d; found_data <- TRUE
-            found_url <- api_url; break
-          }
-        }
-      }
-      if (found_data) break
-    }
+  col_ref <- function(alias, property) {
+    list(Column = list(
+      Expression = list(
+        SourceRef = list(Source = alias)
+      ),
+      Property = property
+    ))
   }
 
-  if (!found_data) stop("Chromote: no accessible data found in rendered JS dashboard")
+  msr_ref <- function(alias, property) {
+    list(Measure = list(
+      Expression = list(
+        SourceRef = list(Source = alias)
+      ),
+      Property = property
+    ))
+  }
 
+  build_payload <- function(from_list, select_list,
+                            top_count = 30000L) {
+    n <- length(select_list)
+    list(
+      version = "1.0.0",
+      queries = I(list(list(
+        Query = list(Commands = I(list(list(
+          SemanticQueryDataShapeCommand = list(
+            Query = list(
+              Version = 2,
+              From = from_list,
+              Select = select_list
+            ),
+            Binding = list(
+              Primary = list(
+                Groupings = I(list(list(
+                  Projections = seq(0L, n - 1L)
+                )))
+              ),
+              DataReduction = list(
+                DataVolume = 4,
+                Primary = list(
+                  Top = list(Count = top_count)
+                )
+              ),
+              Version = 1
+            )
+          )
+        )))),
+        ApplicationContext = list(
+          DatasetId = dataset_id,
+          Sources = I(list(list(
+            ReportId = report_id,
+            VisualId = visual_id
+          )))
+        )
+      ))),
+      modelId = model_id
+    )
+  }
+
+  execute_query <- function(payload) {
+    pjson <- toJSON(payload, auto_unbox = TRUE)
+    resp <- request(api_url) |>
+      req_headers(!!!headers) |>
+      req_body_raw(pjson, type = "application/json") |>
+      req_error(is_error = \(r) FALSE) |>
+      req_perform()
+    if (resp_status(resp) != 200) {
+      warning("HTTP ", resp_status(resp))
+      return(NULL)
+    }
+    resp_body_json(resp, check_type = FALSE)
+  }
+
+  # --- DSR delta decoder ---
+
+  decode_dsr <- function(rj, col_names) {
+    ds <- rj$results[[1]]$result$data$dsr$DS[[1]]
+    rows <- ds$PH[[1]]$DM0
+    if (is.null(rows) || length(rows) == 0) return(NULL)
+
+    dicts <- ds$ValueDicts
+    schema <- rows[[1]]$S
+    n_cols <- length(schema)
+
+    col_dicts <- vapply(
+      schema,
+      \(s) if (!is.null(s$DN)) s$DN else NA_character_,
+      character(1)
+    )
+
+    bits <- 2L^(seq_len(n_cols) - 1L)
+    prev_vals <- rep(list(NA), n_cols)
+
+    decoded <- vector("list", length(rows))
+    for (ri in seq_along(rows)) {
+      row <- rows[[ri]]
+      r_mask <- row$R %||% 0L
+      phi_mask <- row[["\u00d8"]] %||% 0L
+
+      cur <- prev_vals
+      for (ci in which(bitwAnd(phi_mask, bits) != 0L))
+        cur[[ci]] <- NA
+      new_idx <- which(
+        bitwAnd(r_mask, bits) == 0L &
+          bitwAnd(phi_mask, bits) == 0L
+      )
+      c_vals <- row$C %||% list()
+      for (i in seq_along(new_idx)) {
+        if (i <= length(c_vals))
+          cur[[new_idx[i]]] <- c_vals[[i]]
+      }
+      prev_vals <- cur
+
+      for (ci in seq_len(n_cols)) {
+        dn <- col_dicts[ci]
+        if (!is.na(dn) && !is.na(cur[[ci]])) {
+          idx <- as.integer(cur[[ci]]) + 1L
+          d <- dicts[[dn]]
+          if (!is.null(d) && idx >= 1 && idx <= length(d))
+            cur[[ci]] <- d[[idx]]
+        }
+      }
+      decoded[[ri]] <- cur
+    }
+
+    df <- do.call(rbind, lapply(decoded, function(vals) {
+      as.data.frame(
+        setNames(
+          lapply(vals, \(v) if (is.null(v)) NA else v),
+          col_names[seq_len(n_cols)]
+        ),
+        stringsAsFactors = FALSE
+      )
+    }))
+    df
+  }
+
+  # --- Entity/alias shorthands ---
+
+  from_rsv <- list(
+    Name = "p",
+    Entity = "Pub1ic respiratory_rsv_case_data",
+    Type = 0
+  )
+  from_covid <- list(
+    Name = "p1",
+    Entity = "Pub1ic respiratory_covid_case_data",
+    Type = 0
+  )
+  from_flu <- list(
+    Name = "p2",
+    Entity = "Pub1ic respiratory_flu_case_data",
+    Type = 0
+  )
+  from_dates <- list(
+    Name = "t", Entity = "Table_Startdate", Type = 0
+  )
+  from_county_season <- list(
+    Name = "tc", Entity = "Table_County_Season", Type = 0
+  )
+  from_essence <- list(
+    Name = "r", Entity = "respiratory_Essence", Type = 0
+  )
+  from_death <- list(
+    Name = "d",
+    Entity = "Pub1ic respiratory_death_data",
+    Type = 0
+  )
+
+  convert_pbi_date <- function(x) {
+    as_date(as_datetime(as.numeric(x) / 1000))
+  }
+
+  all_data <- list()
+
+  # ================================================================
+  # Q1: Statewide case counts by week + season
+  # ================================================================
+  cat("Q1: Statewide cases by week + season...\n")
+
+  q1 <- build_payload(
+    from_list = list(
+      from_rsv, from_covid, from_flu,
+      from_dates, from_county_season
+    ),
+    select_list = list(
+      col_ref("tc", "SEASON"),
+      col_ref("t", "startdate"),
+      msr_ref("p1", "COVID-19 DC"),
+      msr_ref("p", "RSV DC MEDSISID"),
+      msr_ref("p2", "Flu DC MEDSISID")
+    )
+  )
+  q1_rj <- execute_query(q1)
+  cases_state <- decode_dsr(q1_rj, c(
+    "season", "startdate", "covid_cases",
+    "rsv_cases", "flu_cases"
+  ))
+  if (!is.null(cases_state)) {
+    cases_state$startdate <- convert_pbi_date(cases_state$startdate)
+    cat("  ", nrow(cases_state), "rows\n")
+    all_data[["cases_statewide"]] <- cases_state
+  }
+
+  # ================================================================
+  # Q2: Case counts by week + county (one per disease)
+  # ================================================================
+
+  query_by_county <- function(entity_from, alias,
+                              measure, disease) {
+    cat("Q2:", disease, "by county...\n")
+    p <- build_payload(
+      from_list = list(
+        entity_from, from_dates, from_county_season
+      ),
+      select_list = list(
+        col_ref("tc", "COUNTYNM"),
+        col_ref("tc", "SEASON"),
+        col_ref("t", "startdate"),
+        msr_ref(alias, measure)
+      )
+    )
+    rj <- execute_query(p)
+    df <- decode_dsr(rj, c(
+      "county", "season", "startdate", "case_count"
+    ))
+    if (!is.null(df)) {
+      df$startdate <- convert_pbi_date(df$startdate)
+      df$disease <- disease
+      cat("  ", nrow(df), "rows\n")
+    }
+    df
+  }
+
+  flu_county <- query_by_county(
+    from_flu, "p2", "Flu DC MEDSISID", "Influenza"
+  )
+  covid_county <- query_by_county(
+    from_covid, "p1", "COVID-19 DC", "COVID-19"
+  )
+  rsv_county <- query_by_county(
+    from_rsv, "p", "RSV DC MEDSISID", "RSV"
+  )
+  cases_county <- bind_rows(flu_county, covid_county, rsv_county)
+  if (!is.null(cases_county) && nrow(cases_county) > 0) {
+    all_data[["cases_by_county"]] <- cases_county
+  }
+
+  # ================================================================
+  # Q3: Case counts by week + age group
+  # ================================================================
+
+  query_by_age <- function(entity_name, alias,
+                           measure, disease) {
+    cat("Q3:", disease, "by age group...\n")
+    from_e <- list(
+      Name = alias, Entity = entity_name, Type = 0
+    )
+    p <- build_payload(
+      from_list = list(from_e, from_dates),
+      select_list = list(
+        col_ref(alias, "AGEGP"),
+        col_ref(alias, "SEASON"),
+        col_ref("t", "startdate"),
+        msr_ref(alias, measure)
+      )
+    )
+    rj <- execute_query(p)
+    df <- decode_dsr(rj, c(
+      "age_group", "season", "startdate", "case_count"
+    ))
+    if (!is.null(df)) {
+      df$startdate <- convert_pbi_date(df$startdate)
+      df$disease <- disease
+      cat("  ", nrow(df), "rows\n")
+    }
+    df
+  }
+
+  flu_age <- query_by_age(
+    "Pub1ic respiratory_flu_case_data", "f",
+    "Flu DC MEDSISID", "Influenza"
+  )
+  covid_age <- query_by_age(
+    "Pub1ic respiratory_covid_case_data", "c",
+    "COVID-19 DC", "COVID-19"
+  )
+  rsv_age <- query_by_age(
+    "Pub1ic respiratory_rsv_case_data", "r",
+    "RSV DC MEDSISID", "RSV"
+  )
+  cases_age <- bind_rows(flu_age, covid_age, rsv_age)
+  if (!is.null(cases_age) && nrow(cases_age) > 0) {
+    all_data[["cases_by_age"]] <- cases_age
+  }
+
+  # ================================================================
+  # Q4: Flu type/subtype breakdown by week + season
+  # ================================================================
+  cat("Q4: Flu type/subtype breakdown...\n")
+
+  q4 <- build_payload(
+    from_list = list(
+      list(
+        Name = "f",
+        Entity = "Pub1ic respiratory_flu_case_data",
+        Type = 0
+      ),
+      from_dates
+    ),
+    select_list = list(
+      col_ref("f", "TYPE"),
+      col_ref("f", "SUBTYPE"),
+      col_ref("f", "SEASON"),
+      col_ref("t", "startdate"),
+      msr_ref("f", "Flu DC MEDSISID")
+    )
+  )
+  q4_rj <- execute_query(q4)
+  flu_types <- decode_dsr(q4_rj, c(
+    "flu_type", "flu_subtype", "season",
+    "startdate", "case_count"
+  ))
+  if (!is.null(flu_types)) {
+    flu_types$startdate <- convert_pbi_date(flu_types$startdate)
+    cat("  ", nrow(flu_types), "rows\n")
+    all_data[["flu_type_subtype"]] <- flu_types
+  }
+
+  # ================================================================
+  # Q5: Healthcare visits (respiratory_Essence)
+  #     ED + IP percentages by week
+  # ================================================================
+  cat("Q5: Healthcare visit percentages...\n")
+
+  q5 <- build_payload(
+    from_list = list(from_essence),
+    select_list = list(
+      col_ref("r", "startdate"),
+      col_ref("r", "MMWRWKYR"),
+      col_ref("r", "ED_ARI"),
+      col_ref("r", "ED_COVID"),
+      col_ref("r", "ED_FLU"),
+      col_ref("r", "ED_RSV"),
+      col_ref("r", "IP_ARI"),
+      col_ref("r", "IP_COVID"),
+      col_ref("r", "IP_FLU"),
+      col_ref("r", "IP_RSV")
+    )
+  )
+  q5_rj <- execute_query(q5)
+  visits <- decode_dsr(q5_rj, c(
+    "startdate", "mmwrwkyr",
+    "ed_ari_pct", "ed_covid_pct",
+    "ed_flu_pct", "ed_rsv_pct",
+    "ip_ari_pct", "ip_covid_pct",
+    "ip_flu_pct", "ip_rsv_pct"
+  ))
+  if (!is.null(visits)) {
+    visits$startdate <- convert_pbi_date(visits$startdate)
+    pct_cols <- grep("_pct$", names(visits), value = TRUE)
+    for (col in pct_cols) {
+      visits[[col]] <- round(as.numeric(visits[[col]]) * 100, 2)
+    }
+    cat("  ", nrow(visits), "rows\n")
+    all_data[["healthcare_visits"]] <- visits
+  }
+
+  # ================================================================
+  # Q6: Mortality by week + cause + season
+  # ================================================================
+  cat("Q6: Mortality data...\n")
+
+  q6 <- build_payload(
+    from_list = list(from_death),
+    select_list = list(
+      col_ref("d", "MMWRWKYR"),
+      col_ref("d", "morb"),
+      col_ref("d", "SEASON"),
+      msr_ref("d", "Death Count")
+    )
+  )
+  q6_rj <- execute_query(q6)
+  mortality <- decode_dsr(q6_rj, c(
+    "mmwrwkyr", "cause", "season", "death_count"
+  ))
+  if (!is.null(mortality)) {
+    cat("  ", nrow(mortality), "rows\n")
+    all_data[["mortality"]] <- mortality
+  }
+
+  # ================================================================
+  # Combine all datasets into single standardized output
+  # ================================================================
+
+  if (length(all_data) == 0) stop("All Power BI queries returned empty results")
+
+  # Tag each dataset with its source descriptor before combining
+  for (nm in names(all_data)) {
+    all_data[[nm]]$source_dataset <- nm
+  }
+  data_raw <- bind_rows(all_data)
+
+  # Standardize column names
   names(data_raw) <- tolower(gsub("[^a-z0-9]", "_", names(data_raw)))
-  if (ncol(data_raw) > 1) {
-    data_raw <- dplyr::select(data_raw, where(function(x) !all(is.na(x))))
-  }
-  vroom::vroom_write(data_raw, "standard/data.csv.gz", delim=",")
+
+  # Save raw JSON responses for audit trail
+  writeLines(toJSON(q1_rj, auto_unbox = TRUE), "raw/q1_cases_statewide.json")
+  if (!is.null(q5_rj)) writeLines(toJSON(q5_rj, auto_unbox = TRUE), "raw/q5_healthcare_visits.json")
+  if (!is.null(q6_rj)) writeLines(toJSON(q6_rj, auto_unbox = TRUE), "raw/q6_mortality.json")
+
+  # Write single standardized output
+  vroom::vroom_write(data_raw, "standard/data.csv.gz", delim = ",")
   process$success <- TRUE
 
-  list(success=TRUE, rows=nrow(data_raw),
-       message=paste("Chromote:", nrow(data_raw), "rows from", found_url))
+  list(success = TRUE, rows = nrow(data_raw),
+       message = paste("Power BI data:", nrow(data_raw), "rows from",
+                       length(all_data), "query sets:",
+                       paste(names(all_data), collapse = ", ")))
 
-}, error=function(e) {
-  list(success=FALSE, rows=0L, message=conditionMessage(e))
+}, error = function(e) {
+  list(success = FALSE, rows = 0L, message = conditionMessage(e))
 })
 
 # Save result
 process$last_run <- as.character(Sys.time())
-write(toJSON(process, auto_unbox=TRUE, pretty=TRUE), "process.json")
+write(toJSON(process, auto_unbox = TRUE, pretty = TRUE), "process.json")
 saveRDS(result, "process_result.rds")
 cat(sprintf("[%s] success=%s rows=%d msg=%s\n",
     state_name, result$success, result$rows, result$message))
-
