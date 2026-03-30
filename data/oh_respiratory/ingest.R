@@ -1,7 +1,7 @@
 # ingest.R - Ohio (OH) Respiratory Surveillance
-# Provider: Ohio Department of Health
-# Tier 1 | Strategy: oh_special
-# Run from data/oh_respiratory/
+# Provider: Ohio Health Department
+# Tier 2 | Strategy: chromote
+# Run from data/mi_respiratory/
 
 library(httr)
 library(rvest)
@@ -11,7 +11,7 @@ library(jsonlite)
 
 state_fips  <- "39"
 state_name  <- "Ohio"
-source_urls <- c("https://data.ohio.gov/wps/portal/gov/data/view/ohio-department-of-health-respiratory-dashboard")
+source_urls <- c("https://odh.ohio.gov/know-our-programs/covid-19/", "https://odh.ohio.gov/know-our-programs/influenza/flu-activity/")
 
 # Initialize process record
 process_file <- "process.json"
@@ -22,67 +22,224 @@ if (file.exists(process_file)) {
 }
 
 
-# Ohio - data.ohio.gov open data portal (Socrata-based)
+# Chromote headless browser: Ohio
+# Renders JS dashboard, then discovers: download links, ArcGIS REST, Socrata APIs
 result <- tryCatch({
-  # Try to find Socrata dataset ID from the portal page
-  portal_url <- source_urls[1]
-  resp <- httr::GET(portal_url, httr::timeout(30), httr::user_agent("Mozilla/5.0"))
+  library(chromote)
 
-  # data.ohio.gov uses a custom portal; try known dataset patterns
-  # Search for JSON API endpoint via page scraping
-  page_text <- httr::content(resp, "text", encoding="UTF-8")
+  b <- ChromoteSession$new()
+  on.exit(tryCatch(b$close(), error=function(e) NULL), add=TRUE)
 
-  # Extract dataset IDs (Socrata format: 4-char-4-char)
-  id_matches <- regmatches(page_text, gregexpr("[a-z0-9]{4}-[a-z0-9]{4}", page_text))[[1]]
-  id_matches <- unique(id_matches)
-
-  # Also try the OAKS (Ohio portal) API endpoint pattern
-  # Try a direct search via data.ohio.gov catalog API
-  search_resp <- tryCatch(
-    httr::GET("https://data.ohio.gov/api/catalog/v1?search=respiratory+health&limit=10",
-              httr::timeout(30)),
-    error=function(e) NULL)
-
-  found_data <- FALSE
   data_raw   <- NULL
+  found_data <- FALSE
+  found_url  <- NULL
+  resp_kw <- c("influenza","rsv","covid","respiratory","ili","ari",
+               "surveillance","virus","cases","percent","hosp","death","flu","disease")
 
-  if (!is.null(search_resp) && httr::status_code(search_resp) == 200) {
-    catalog <- tryCatch(jsonlite::fromJSON(httr::content(search_resp, "text")), error=function(e) NULL)
-    if (!is.null(catalog$results) && length(catalog$results) > 0) {
-      # Try first matching dataset
-      ds_id <- catalog$results$id[1]
-      api_url <- paste0("https://data.ohio.gov/resource/", ds_id, ".json?$limit=50000")
-      data_resp <- httr::GET(api_url, httr::timeout(60))
-      if (httr::status_code(data_resp) == 200) {
-        data_raw <- as.data.frame(jsonlite::fromJSON(httr::content(data_resp, "text")))
-        found_data <- TRUE
+  for (page_url in source_urls) {
+    tryCatch(b$Page$navigate(page_url, wait_=TRUE, timeout_=25), error=function(e) NULL)
+    Sys.sleep(10)
+
+    html_content <- tryCatch(
+      b$Runtime$evaluate("document.documentElement.outerHTML")$result$value,
+      error=function(e) "")
+    if (nchar(html_content) < 200) next
+
+    html_dom <- tryCatch(rvest::read_html(html_content), error=function(e) NULL)
+
+    # Strategy 1: Download links visible after JS renders
+    if (!is.null(html_dom)) {
+      links <- html_dom |> rvest::html_nodes("a") |> rvest::html_attr("href")
+      links <- links[!is.na(links)]
+      data_links <- links[grepl("[.](csv|xlsx?|json|tsv)([?#]|$)", links, ignore.case=TRUE)]
+      # Exclude immunization/vaccine files — not respiratory surveillance
+      data_links <- data_links[!grepl("immun|vaccine|respimms|imms|vaccinat", data_links, ignore.case=TRUE)]
+
+      for (dl_url in data_links[seq_len(min(10, length(data_links)))]) {
+        if (!grepl("^https?://", dl_url)) {
+          bp <- httr::parse_url(page_url)
+          dl_url <- if (grepl("^//", dl_url)) paste0(bp$scheme, ":", dl_url)
+                    else if (grepl("^/", dl_url)) paste0(bp$scheme, "://", bp$hostname, dl_url)
+                    else paste0(page_url, "/", dl_url)
+        }
+        ext <- tolower(sub(".*[.]([a-zA-Z0-9]{1,5})([?#].*)?$", "\\1", dl_url))
+        if (!ext %in% c("csv","xlsx","xls","json","tsv")) ext <- "csv"
+        local_f <- paste0("raw/chromote_dl.", ext)
+        dl_resp <- tryCatch(httr::GET(dl_url, httr::timeout(90),
+          httr::write_disk(local_f, overwrite=TRUE),
+          httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
+        if (is.null(dl_resp) || httr::status_code(dl_resp) != 200) next
+        d <- if (ext %in% c("xlsx","xls")) {
+          tryCatch(as.data.frame(readxl::read_excel(local_f)), error=function(e) NULL)
+        } else if (ext == "json") {
+          tryCatch(as.data.frame(jsonlite::fromJSON(local_f)), error=function(e) NULL)
+        } else {
+          tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
+        }
+        if (!is.null(d) && nrow(d) > 0) {
+          col_text <- paste(tolower(names(d)), collapse=" ")
+          sam_text <- paste(tolower(unlist(head(d, 3))), collapse=" ")
+          ok <- any(sapply(resp_kw, function(k) grepl(k, col_text))) ||
+                any(sapply(resp_kw, function(k) grepl(k, sam_text)))
+          if (ok) { data_raw <- d; found_data <- TRUE; found_url <- dl_url; break }
+        }
       }
+      if (found_data) break
+    }
+
+    # Strategy 2: ArcGIS FeatureServer URLs in page source
+    if (!found_data) {
+      fs_matches <- unique(regmatches(html_content,
+        gregexpr("https?://[^[:space:]]+/FeatureServer/[0-9]+", html_content))[[1]])
+      for (fs_url in fs_matches[seq_len(min(5, length(fs_matches)))]) {
+        q_url <- paste0(fs_url, "/query?where=1%3D1&outFields=*&f=json&resultRecordCount=50000")
+        r <- tryCatch(httr::GET(q_url, httr::timeout(60), httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
+        if (is.null(r) || httr::status_code(r) != 200) next
+        jd <- tryCatch(jsonlite::fromJSON(httr::content(r, "text")), error=function(e) NULL)
+        if (!is.null(jd$features) && length(jd$features) > 0) {
+          d <- tryCatch(as.data.frame(jd$features$attributes), error=function(e) NULL)
+          if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- fs_url; break }
+        }
+      }
+      if (found_data) break
+    }
+
+    # Strategy 3: ArcGIS MapServer URLs in page source
+    if (!found_data) {
+      ms_matches <- unique(regmatches(html_content,
+        gregexpr("https?://[^[:space:]]+/MapServer/[0-9]+", html_content))[[1]])
+      for (ms_url in ms_matches[seq_len(min(5, length(ms_matches)))]) {
+        q_url <- paste0(ms_url, "/query?where=1%3D1&outFields=*&f=json&resultRecordCount=50000")
+        r <- tryCatch(httr::GET(q_url, httr::timeout(60), httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
+        if (is.null(r) || httr::status_code(r) != 200) next
+        jd <- tryCatch(jsonlite::fromJSON(httr::content(r, "text")), error=function(e) NULL)
+        if (!is.null(jd$features) && length(jd$features) > 0) {
+          d <- tryCatch(as.data.frame(jd$features$attributes), error=function(e) NULL)
+          if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- ms_url; break }
+        }
+      }
+      if (found_data) break
+    }
+
+    # Strategy 4: Socrata resource endpoints embedded in page
+    if (!found_data) {
+      soc_matches <- unique(regmatches(html_content,
+        gregexpr("https?://[a-zA-Z0-9.-]+[.]gov/resource/[a-z0-9]{4}-[a-z0-9]{4}", html_content))[[1]])
+      for (soc_base in soc_matches[seq_len(min(3, length(soc_matches)))]) {
+        csv_url <- paste0(soc_base, ".csv?$limit=50000")
+        r <- tryCatch(httr::GET(csv_url, httr::timeout(60),
+          httr::write_disk("raw/chromote_socrata.csv", overwrite=TRUE),
+          httr::user_agent("Mozilla/5.0")), error=function(e) NULL)
+        if (is.null(r) || httr::status_code(r) != 200) next
+        d <- tryCatch(vroom::vroom("raw/chromote_socrata.csv", show_col_types=FALSE), error=function(e) NULL)
+        if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- csv_url; break }
+      }
+      if (found_data) break
+    }
+
+    # Strategy 5: Direct CSV/JSON links in page <script> src or iframe src
+    if (!found_data && !is.null(html_dom)) {
+      script_srcs <- html_dom |> rvest::html_nodes("script,iframe") |> rvest::html_attr("src")
+      script_srcs <- script_srcs[!is.na(script_srcs) & grepl("[.](csv|json)([?]|$)", script_srcs)]
+      for (s_url in script_srcs[seq_len(min(3, length(script_srcs)))]) {
+        if (!grepl("^https?://", s_url)) {
+          bp <- httr::parse_url(page_url)
+          s_url <- paste0(bp$scheme, "://", bp$hostname, s_url)
+        }
+        ext <- if (grepl("[.]json", s_url)) "json" else "csv"
+        local_f <- paste0("raw/chromote_src.", ext)
+        r <- tryCatch(httr::GET(s_url, httr::timeout(60),
+          httr::write_disk(local_f, overwrite=TRUE)), error=function(e) NULL)
+        if (is.null(r) || httr::status_code(r) != 200) next
+        d <- if (ext == "json") {
+          tryCatch(as.data.frame(jsonlite::fromJSON(local_f)), error=function(e) NULL)
+        } else {
+          tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
+        }
+        if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- s_url; break }
+      }
+      if (found_data) break
+    }
+
+    # Strategy 6: Performance API — capture XHR/Fetch network requests
+    if (!found_data) {
+      perf_js <- paste0(
+        "JSON.stringify(",
+        "performance.getEntriesByType('resource')",
+        ".filter(e => e.initiatorType === 'xmlhttprequest' || e.initiatorType === 'fetch')",
+        ".map(e => e.name)",
+        ")")
+      perf_raw <- tryCatch(
+        b$Runtime$evaluate(perf_js)$result$value,
+        error = function(e) "[]")
+      api_urls <- tryCatch(jsonlite::fromJSON(perf_raw), error = function(e) character(0))
+      # Filter for data-like URLs (JSON APIs, CSVs, FeatureServer)
+      api_urls <- unique(api_urls[grepl(
+        "api|query|json|csv|data|feature|resource|result|record|export",
+        api_urls, ignore.case = TRUE)])
+      # Exclude common non-data URLs
+      api_urls <- api_urls[!grepl(
+        "analytics|tracking|pixel|fonts|google|facebook|tag.?manager|recaptcha|cdn\\.js",
+        api_urls, ignore.case = TRUE)]
+
+      for (api_url in api_urls[seq_len(min(10, length(api_urls)))]) {
+        local_f <- paste0("raw/chromote_api_", length(api_urls), ".json")
+        r <- tryCatch(httr::GET(api_url, httr::timeout(60),
+          httr::user_agent("Mozilla/5.0"),
+          httr::write_disk(local_f, overwrite = TRUE)),
+          error = function(e) NULL)
+        if (is.null(r) || httr::status_code(r) != 200) next
+        ct <- httr::headers(r)[["content-type"]]
+        d <- NULL
+        if (!is.null(ct) && grepl("json", ct, ignore.case = TRUE)) {
+          raw_json <- tryCatch(jsonlite::fromJSON(local_f, flatten = TRUE),
+            error = function(e) NULL)
+          if (!is.null(raw_json)) {
+            # Handle ArcGIS FeatureServer response
+            if (!is.null(raw_json$features)) {
+              d <- tryCatch(as.data.frame(raw_json$features$attributes),
+                error = function(e) NULL)
+            } else if (is.data.frame(raw_json)) {
+              d <- raw_json
+            } else if (is.list(raw_json) && length(raw_json) > 0) {
+              # Try to find the data array in the response
+              for (nm in names(raw_json)) {
+                if (is.data.frame(raw_json[[nm]]) && nrow(raw_json[[nm]]) > 5) {
+                  d <- raw_json[[nm]]; break
+                }
+              }
+            }
+          }
+        } else {
+          d <- tryCatch(vroom::vroom(local_f, show_col_types = FALSE),
+            error = function(e) NULL)
+        }
+        if (!is.null(d) && nrow(d) > 5) {
+          col_text <- paste(tolower(names(d)), collapse = " ")
+          sam_text <- paste(tolower(unlist(head(d, 3))), collapse = " ")
+          ok <- any(sapply(resp_kw, function(k) grepl(k, col_text))) ||
+                any(sapply(resp_kw, function(k) grepl(k, sam_text)))
+          if (ok) {
+            data_raw <- d; found_data <- TRUE
+            found_url <- api_url; break
+          }
+        }
+      }
+      if (found_data) break
     }
   }
 
-  # Try CSV download directly
-  if (!found_data) {
-    # Try common Ohio respiratory dataset ID patterns
-    candidate_ids <- c("4zti-3ab3", "qtaz-5kaw", "rdvy-kkni")
-    for (ds_id in candidate_ids) {
-      api_url  <- paste0("https://data.ohio.gov/resource/", ds_id, ".csv?$limit=50000")
-      dl_resp  <- tryCatch(httr::GET(api_url, httr::timeout(30),
-                    httr::write_disk("raw/data.csv", overwrite=TRUE)), error=function(e) NULL)
-      if (!is.null(dl_resp) && httr::status_code(dl_resp) == 200) {
-        d <- tryCatch(vroom::vroom("raw/data.csv", show_col_types=FALSE), error=function(e) NULL)
-        if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; break }
-      }
-    }
+  if (!found_data) stop("Chromote: no accessible data found in rendered JS dashboard")
+
+  names(data_raw) <- tolower(gsub("[^a-z0-9]", "_", names(data_raw)))
+  if (ncol(data_raw) > 1) {
+    data_raw <- dplyr::select(data_raw, where(function(x) !all(is.na(x))))
   }
-
-  if (!found_data) stop("Ohio data.ohio.gov dataset not accessible via API; dataset ID unknown")
-
-  names(data_raw) <- tolower(names(data_raw))
   vroom::vroom_write(data_raw, "standard/data.csv.gz", delim=",")
   process$success <- TRUE
 
   list(success=TRUE, rows=nrow(data_raw),
-       message=paste("Ohio data retrieved:", nrow(data_raw), "rows"))
+       message=paste("Chromote:", nrow(data_raw), "rows from", found_url))
 
 }, error=function(e) {
   list(success=FALSE, rows=0L, message=conditionMessage(e))

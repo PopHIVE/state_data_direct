@@ -53,7 +53,10 @@ result <- tryCatch({
     ok <- any(sapply(resp_keywords, function(k) grepl(k, col_text))) ||
           any(sapply(resp_keywords, function(k) grepl(k, sam_text)))
     if (ok) {
-      names(d) <- tolower(gsub("[^a-z0-9]", "_", names(d)))
+      # Use iconv to transliterate Unicode (bold/special chars) to ASCII before cleaning
+      n <- iconv(names(d), from="UTF-8", to="ASCII//TRANSLIT", sub="_")
+      n <- tolower(gsub("[^a-z0-9]+", "_", gsub("^_+|_+$", "", n)))
+      names(d) <- make.unique(n)
       d$source_file <- fname
       all_data[[length(all_data) + 1]] <- d
       found_urls <- c(found_urls, dl_url)

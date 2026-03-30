@@ -52,8 +52,10 @@ result <- tryCatch({
       links <- html_dom |> rvest::html_nodes("a") |> rvest::html_attr("href")
       links <- links[!is.na(links)]
       data_links <- links[grepl("[.](csv|xlsx?|json|tsv)([?#]|$)", links, ignore.case=TRUE)]
+      # Exclude immunization/vaccine files — not respiratory surveillance
+      data_links <- data_links[!grepl("immun|vaccine|respimms|imms|vaccinat", data_links, ignore.case=TRUE)]
 
-      for (dl_url in data_links[seq_len(min(8, length(data_links)))]) {
+      for (dl_url in data_links[seq_len(min(10, length(data_links)))]) {
         if (!grepl("^https?://", dl_url)) {
           bp <- httr::parse_url(page_url)
           dl_url <- if (grepl("^//", dl_url)) paste0(bp$scheme, ":", dl_url)
@@ -155,6 +157,73 @@ result <- tryCatch({
           tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
         }
         if (!is.null(d) && nrow(d) > 0) { data_raw <- d; found_data <- TRUE; found_url <- s_url; break }
+      }
+      if (found_data) break
+    }
+
+    # Strategy 6: Performance API — capture XHR/Fetch network requests
+    if (!found_data) {
+      perf_js <- paste0(
+        "JSON.stringify(",
+        "performance.getEntriesByType('resource')",
+        ".filter(e => e.initiatorType === 'xmlhttprequest' || e.initiatorType === 'fetch')",
+        ".map(e => e.name)",
+        ")")
+      perf_raw <- tryCatch(
+        b$Runtime$evaluate(perf_js)$result$value,
+        error = function(e) "[]")
+      api_urls <- tryCatch(jsonlite::fromJSON(perf_raw), error = function(e) character(0))
+      # Filter for data-like URLs (JSON APIs, CSVs, FeatureServer)
+      api_urls <- unique(api_urls[grepl(
+        "api|query|json|csv|data|feature|resource|result|record|export",
+        api_urls, ignore.case = TRUE)])
+      # Exclude common non-data URLs
+      api_urls <- api_urls[!grepl(
+        "analytics|tracking|pixel|fonts|google|facebook|tag.?manager|recaptcha|cdn\\.js",
+        api_urls, ignore.case = TRUE)]
+
+      for (api_url in api_urls[seq_len(min(10, length(api_urls)))]) {
+        local_f <- paste0("raw/chromote_api_", length(api_urls), ".json")
+        r <- tryCatch(httr::GET(api_url, httr::timeout(60),
+          httr::user_agent("Mozilla/5.0"),
+          httr::write_disk(local_f, overwrite = TRUE)),
+          error = function(e) NULL)
+        if (is.null(r) || httr::status_code(r) != 200) next
+        ct <- httr::headers(r)[["content-type"]]
+        d <- NULL
+        if (!is.null(ct) && grepl("json", ct, ignore.case = TRUE)) {
+          raw_json <- tryCatch(jsonlite::fromJSON(local_f, flatten = TRUE),
+            error = function(e) NULL)
+          if (!is.null(raw_json)) {
+            # Handle ArcGIS FeatureServer response
+            if (!is.null(raw_json$features)) {
+              d <- tryCatch(as.data.frame(raw_json$features$attributes),
+                error = function(e) NULL)
+            } else if (is.data.frame(raw_json)) {
+              d <- raw_json
+            } else if (is.list(raw_json) && length(raw_json) > 0) {
+              # Try to find the data array in the response
+              for (nm in names(raw_json)) {
+                if (is.data.frame(raw_json[[nm]]) && nrow(raw_json[[nm]]) > 5) {
+                  d <- raw_json[[nm]]; break
+                }
+              }
+            }
+          }
+        } else {
+          d <- tryCatch(vroom::vroom(local_f, show_col_types = FALSE),
+            error = function(e) NULL)
+        }
+        if (!is.null(d) && nrow(d) > 5) {
+          col_text <- paste(tolower(names(d)), collapse = " ")
+          sam_text <- paste(tolower(unlist(head(d, 3))), collapse = " ")
+          ok <- any(sapply(resp_kw, function(k) grepl(k, col_text))) ||
+                any(sapply(resp_kw, function(k) grepl(k, sam_text)))
+          if (ok) {
+            data_raw <- d; found_data <- TRUE
+            found_url <- api_url; break
+          }
+        }
       }
       if (found_data) break
     }

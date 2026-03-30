@@ -1,0 +1,16 @@
+{
+  "name": "state_data_direct",
+  "description": "State-level respiratory surveillance data from epiportal_state_indicators.csv",
+  "version": "0.1.0",
+  "sources": [
+    "al_respiratory", "ak_respiratory", "az_respiratory", "ca_respiratory",
+    "co_respiratory", "ct_respiratory", "fl_respiratory", "ga_respiratory",
+    "ia_respiratory", "il_respiratory", "in_respiratory", "ky_respiratory",
+    "la_respiratory", "ma_respiratory", "md_respiratory", "mi_respiratory",
+    "mn_respiratory", "mo_respiratory", "nj_respiratory", "ny_respiratory",
+    "nc_respiratory", "oh_respiratory", "ok_respiratory", "or_respiratory",
+    "pa_respiratory", "sc_respiratory", "tn_respiratory", "tx_respiratory",
+    "ut_respiratory", "vt_respiratory", "va_respiratory", "wa_respiratory",
+    "wi_respiratory"
+  ]
+}

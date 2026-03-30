@@ -1,6 +1,6 @@
 # ingest.R - Oregon (OR) Respiratory Surveillance
 # Provider: Oregon Health Authority
-# Tier 1 | Strategy: socrata + tableau_csv
+# Tier 1 | Strategy: tableau_csv + html
 # Run from data/or_respiratory/
 
 library(httr)
@@ -12,8 +12,7 @@ library(jsonlite)
 state_fips  <- "41"
 state_name  <- "Oregon"
 source_urls <- c("https://www.oregon.gov/oha/ph/diseasesconditions/communicabledisease/diseasesurveillancedata/influenza/pages/surveil.aspx",
-                 "https://www.oregon.gov/oha/ph/diseasesconditions/communicabledisease/diseasesurveillancedata/pages/respiratorysyncytialvirussurveillancedata.aspx",
-                 "https://public.tableau.com/views/OregonsRespiratoryVirusData/Deaths")
+                 "https://www.oregon.gov/oha/ph/diseasesconditions/communicabledisease/diseasesurveillancedata/pages/respiratorysyncytialvirussurveillancedata.aspx")
 
 # Initialize process record
 process_file <- "process.json"
@@ -27,46 +26,32 @@ result <- tryCatch({
   all_data   <- list()
   found_urls <- character(0)
 
-  # Strategy 1: Socrata - Oregon's Weekly Reportable Disease Data
-  socrata_url <- "https://data.oregon.gov/resource/2idf-8ewz.csv?$limit=200000"
-  local_f <- "raw/or_socrata.csv"
-  r <- tryCatch(httr::GET(socrata_url, httr::timeout(120), httr::user_agent("Mozilla/5.0"),
-    httr::write_disk(local_f, overwrite=TRUE)), error=function(e) NULL)
-  if (!is.null(r) && httr::status_code(r) == 200) {
-    d <- tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
-    if (!is.null(d) && nrow(d) > 0) {
-      names(d) <- tolower(gsub("[^a-z0-9]", "_", names(d)))
-      d$source_dataset <- "2idf-8ewz"
-      all_data[[length(all_data) + 1]] <- d
-      found_urls <- c(found_urls, "data.oregon.gov/2idf-8ewz")
-    }
-  }
-
-  # Strategy 2: Tableau Public CSV downloads
+  # Strategy 1: Tableau Public CSV downloads (primary source for OR respiratory)
+  # These views contain COVID, Influenza, RSV deaths/test positivity/outbreaks
   tableau_views <- c(
     "https://public.tableau.com/views/OregonsRespiratoryVirusData/Deaths.csv?:showVizHome=no",
-    "https://public.tableau.com/views/OregonsRespiratoryVirusData/Hospitalizations.csv?:showVizHome=no",
     "https://public.tableau.com/views/OregonsRespiratoryVirusData/TestPositivity.csv?:showVizHome=no",
-    "https://public.tableau.com/views/OregonsRespiratoryVirusData/Outbreaks.csv?:showVizHome=no"
+    "https://public.tableau.com/views/OregonsRespiratoryVirusData/Outbreaks.csv?:showVizHome=no",
+    "https://public.tableau.com/views/OregonsRespiratoryVirusData/Hospitalizations.csv?:showVizHome=no",
+    "https://public.tableau.com/views/OregonsRespiratoryVirusData/Overview.csv?:showVizHome=no"
   )
   for (tab_url in tableau_views) {
     view_name <- sub(".*/([^/]+)\\.csv.*", "\\1", tab_url)
     local_f <- paste0("raw/or_tableau_", tolower(view_name), ".csv")
     r <- tryCatch(httr::GET(tab_url, httr::timeout(60), httr::user_agent("Mozilla/5.0"),
       httr::write_disk(local_f, overwrite=TRUE)), error=function(e) NULL)
-    if (!is.null(r) && httr::status_code(r) == 200) {
-      d <- tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
-      if (!is.null(d) && nrow(d) > 0) {
-        names(d) <- tolower(gsub("[^a-z0-9]", "_", names(d)))
-        d$source_dataset <- paste0("tableau_", view_name)
-        all_data[[length(all_data) + 1]] <- d
-        found_urls <- c(found_urls, paste0("Tableau/", view_name))
-      }
+    if (is.null(r) || httr::status_code(r) != 200) next
+    d <- tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
+    if (!is.null(d) && nrow(d) > 0) {
+      names(d) <- make.unique(tolower(gsub("[^a-z0-9]", "_", names(d))))
+      d$source_dataset <- paste0("tableau_", view_name)
+      all_data[[length(all_data) + 1]] <- d
+      found_urls <- c(found_urls, paste0("Tableau/", view_name))
     }
   }
 
-  # Strategy 3: HTML scraping of OHA surveillance pages for CSV/Excel links
-  for (page_url in source_urls[1:2]) {
+  # Strategy 2: HTML scraping of OHA surveillance pages for CSV/Excel links
+  for (page_url in source_urls) {
     resp <- tryCatch(httr::GET(page_url, httr::timeout(30), httr::user_agent("Mozilla/5.0")),
       error=function(e) NULL)
     if (is.null(resp) || httr::status_code(resp) != 200) next
@@ -96,7 +81,7 @@ result <- tryCatch({
         tryCatch(vroom::vroom(local_f, show_col_types=FALSE), error=function(e) NULL)
       }
       if (!is.null(d) && nrow(d) > 0) {
-        names(d) <- tolower(gsub("[^a-z0-9]", "_", names(d)))
+        names(d) <- make.unique(tolower(gsub("[^a-z0-9]", "_", names(d))))
         d$source_dataset <- basename(dl_url)
         all_data[[length(all_data) + 1]] <- d
         found_urls <- c(found_urls, dl_url)
