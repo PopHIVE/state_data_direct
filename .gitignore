@@ -19,3 +19,6 @@ coverage_analysis.R
 
 # Claude internals
 .claude/
+
+# Specific data files
+epiportal_state_indicators.csv
